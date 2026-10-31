@@ -2574,7 +2574,7 @@ dependencies = [
 
 [[package]]
 name = "poryadok-app"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "poryadok-core",
  "serde",
@@ -2585,7 +2585,7 @@ dependencies = [
 
 [[package]]
 name = "poryadok-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "dirs 6.0.0",
  "objc2",

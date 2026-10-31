@@ -7,13 +7,13 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
 /// Дольше этого распознавание одной картинки не ждём.
-const PATIENCE: Duration = Duration::from_secs(8);
+const PATIENCE: Duration = Duration::from_secs(5);
 /// Распознавание сломалось — до конца работы программы больше не пробуем.
 static BROKEN: AtomicBool = AtomicBool::new(false);
 
 /// Распознаёт с предохранителем. Бывает, что системный движок не отвечает десятки секунд
 /// (так было на macOS 27: ошибка нейродвижка `e5rt`, и в Swift тоже). Тогда ждём не дольше
-/// [`PATIENCE`], выключаем распознавание и дальше решаем по названиям — план не зависает.
+/// [`PATIENCE`] (5 с), выключаем распознавание и дальше решаем по названиям — план не зависает.
 pub fn recognize(path: &Path) -> Option<String> {
     if BROKEN.load(Ordering::Relaxed) {
         return None;
@@ -23,11 +23,22 @@ pub fn recognize(path: &Path) -> Option<String> {
     std::thread::spawn(move || {
         let _ = tx.send(recognize_now(&owned));
     });
-    match rx.recv_timeout(PATIENCE) {
-        Ok(text) => text,
-        Err(_) => {
-            BROKEN.store(true, Ordering::Relaxed);
-            None
+    // Ждём короткими шагами: если у соседнего потока распознавание уже не ответило,
+    // остальные сдаются сразу, а не досиживают каждый свои секунды.
+    let started = std::time::Instant::now();
+    loop {
+        match rx.recv_timeout(Duration::from_millis(100)) {
+            Ok(text) => return text,
+            Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => return None,
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
+                if BROKEN.load(Ordering::Relaxed) {
+                    return None;
+                }
+                if started.elapsed() >= PATIENCE {
+                    BROKEN.store(true, Ordering::Relaxed);
+                    return None;
+                }
+            }
         }
     }
 }

@@ -121,7 +121,7 @@ function renderPlan(plan) {
   $("status").textContent = "";
 
   if (plan.count === 0) {
-    box.append(el("div", "empty", "Тут уже порядок."));
+    box.append(el("div", "empty", plan.skipped.length ? "Раскладывать нечего. Остальное остаётся на месте — вот почему:" : "Тут уже порядок."));
   }
   for (const s of plan.shelves) {
     box.append(shelf({ title: s.title, count: s.count, where: `${s.place} · ${s.size}`, items: s.items }));
@@ -133,7 +133,7 @@ function renderPlan(plan) {
         count: plan.skipped.length,
         where: "ярлыки, программы, проекты и то, что не узнал",
         items: plan.skipped.map((k) => `${k.name} — ${k.reason}`),
-        extra: "shelf--rest",
+        extra: plan.count === 0 ? "shelf--rest is-open" : "shelf--rest",
       }),
     );
   }
