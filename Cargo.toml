@@ -1,0 +1,16 @@
+[workspace]
+members = ["core", "app"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[profile.release]
+# Маленькая программа, которая открывается мгновенно.
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

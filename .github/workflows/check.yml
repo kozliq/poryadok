@@ -1,0 +1,23 @@
+name: Проверка
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: swatinem/rust-cache@v2
+      # Ядро и команда poryadok — без окна, поэтому собираются где угодно.
+      - run: cargo clippy -p poryadok-core --all-targets -- -D warnings
+      - run: cargo test -p poryadok-core

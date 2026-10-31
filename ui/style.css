@@ -1,0 +1,353 @@
+/*
+ * Порядок — визитка.
+ *
+ * Всё считается от ширины окна: 1rem = ширина / 36 (см. core/src/card.rs) — не меньше 15 px.
+ * Шкала кеглей — шаги √φ ≈ 1,272: 0,786 · 1 · 1,272 · 1,618 · 2,618.
+ * Поля — ширина / φ⁵ ≈ 9 %: классическое поле книжной полосы.
+ * Цвет кости и графит вместо белого и чёрного; один акцент — бычья кровь.
+ */
+
+@font-face {
+  font-family: "EB Garamond";
+  src: url("fonts/EBGaramond.ttf") format("truetype");
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  --bone: #ebe4d6;
+  --ink: #1e1b18;
+  --graphite: #4d463f;
+  --hair: rgba(30, 27, 24, 0.2);
+  --accent: #6e1e1e;
+
+  --t-1: 0.786rem;
+  --t0: 1rem;
+  --t1: 1.272rem;
+  --t2: 1.618rem;
+  --t3: 2.618rem;
+
+  --field: 3.4rem;     /* ширина / φ⁵ */
+  --gap: 0.618rem;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --fast: 220ms;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: calc(100vw / 36);
+  background: var(--bone);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bone);
+  font-family: "EB Garamond", ui-serif, "New York", Georgia, serif;
+  font-size: var(--t0);
+  line-height: 1.38;
+  /* Цифры ровные, по линии строки: старинные «прыгающие» читаются хуже. */
+  font-feature-settings: "kern", "liga", "lnum";
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ---------- Визитка ---------- */
+
+.card {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Плотный картон: едва заметное зерно. */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.12 0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* Перламутр: три пятна света, которые чуть плывут за курсором — как блик на картоне. */
+.sheen {
+  position: absolute;
+  inset: -30%;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 34% at 24% 22%, rgba(250, 222, 228, 0.75), transparent 70%),
+    radial-gradient(36% 40% at 82% 34%, rgba(214, 228, 246, 0.7), transparent 70%),
+    radial-gradient(40% 30% at 56% 88%, rgba(222, 242, 226, 0.6), transparent 70%);
+  transform: translate3d(var(--sx, 0), var(--sy, 0), 0);
+  transition: transform 320ms var(--ease);
+}
+
+.caps {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: var(--t-1);
+  font-feature-settings: "kern", "lnum";
+  color: var(--graphite);
+}
+
+.num { font-variant-numeric: lining-nums tabular-nums; font-feature-settings: "lnum", "tnum"; }
+
+.rule {
+  border: 0;
+  height: 1px;
+  width: 3.4rem;
+  margin: var(--t0) auto;
+  background: var(--hair);
+}
+.rule--wide { width: auto; margin: 0.786rem 0 0; }
+
+/* ---------- Экраны ---------- */
+
+.view {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 2.1rem var(--field) 1.618rem;
+  animation: appear var(--fast) var(--ease) both;
+}
+.view[hidden] { display: none; }
+
+@keyframes appear {
+  from { opacity: 0; transform: translateY(0.25rem); }
+  to { opacity: 1; transform: none; }
+}
+
+.center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.corner { position: absolute; top: 1.272rem; }
+.corner--right { right: var(--field); }
+
+.title {
+  font-size: var(--t3);
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  /* Разрядка добавляет пробел и после последней буквы — возвращаем, чтобы слово стояло ровно по центру. */
+  margin-right: -0.32em;
+  color: var(--ink);
+  line-height: 1.05;
+}
+
+.subtitle {
+  margin-top: 0.4rem;
+  font-size: var(--t1);
+  color: var(--graphite);
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 var(--t1);
+  font-size: var(--t1);
+}
+.choices .link + .link::before {
+  content: "·";
+  position: absolute;
+  margin-left: calc(var(--t1) * -0.62);
+  color: var(--hair);
+  pointer-events: none;
+}
+
+.hint { margin-top: 0.618rem; }
+
+/* ---------- Кнопки — это текст ---------- */
+
+.link {
+  position: relative;
+  font: inherit;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  text-decoration-color: var(--hair);
+  transition: text-decoration-color var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+.link:hover { text-decoration-color: currentColor; }
+.link:focus-visible { outline: none; text-decoration-thickness: 2px; text-decoration-color: var(--accent); }
+.link[disabled] { color: var(--graphite); cursor: default; text-decoration-color: transparent; }
+
+.link--main {
+  font-size: var(--t1);
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  text-decoration-color: currentColor;
+}
+.link--main:hover { text-decoration-thickness: 2px; }
+
+.foot {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: baseline;
+  gap: var(--gap);
+  font-size: var(--t0);
+}
+.foot > :first-child { justify-self: start; }
+.foot > :nth-child(2) { justify-self: center; }
+.foot > :last-child { justify-self: end; }
+.foot .link:not(.link--main) { color: var(--graphite); }
+.foot .link:not(.link--main):hover { color: var(--ink); }
+
+/* ---------- План ---------- */
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--t0);
+}
+
+.shelves {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0 calc(var(--gap) * -1);
+  padding: 0.4rem var(--gap) 0.786rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--hair) transparent;
+  outline: none;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 0.6rem, #000 calc(100% - 1rem), transparent 100%);
+}
+
+.shelf { padding: 0.4rem 0 0.3rem; cursor: pointer; }
+.shelf__row { display: flex; align-items: baseline; }
+.shelf__title { font-size: var(--t1); }
+.shelf__dots {
+  flex: 1;
+  margin: 0 0.5rem;
+  border-bottom: 1px dotted var(--hair);
+  transform: translateY(-0.28em);
+}
+.shelf__count { font-size: var(--t1); }
+.shelf__where {
+  font-size: var(--t0);
+  color: var(--graphite);
+}
+.shelf__items {
+  display: none;
+  columns: 2;
+  column-gap: var(--t1);
+  margin: 0.3rem 0 0.2rem;
+  font-size: var(--t0);
+  color: var(--graphite);
+  user-select: text;
+  -webkit-user-select: text;
+}
+.shelf__items li { list-style: none; break-inside: avoid; overflow-wrap: anywhere; }
+.shelf.is-open .shelf__items { display: block; }
+.shelf:hover .shelf__title { text-decoration: underline; text-decoration-color: var(--hair); text-underline-offset: 0.22em; }
+
+.shelf--rest .shelf__title, .shelf--rest .shelf__count { font-size: var(--t0); color: var(--graphite); }
+.shelf--rest .shelf__items { columns: 1; }
+
+.note {
+  margin-top: 0.5rem;
+  font-size: var(--t0);
+  color: var(--graphite);
+}
+
+.empty {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--t2);
+  color: var(--graphite);
+}
+
+.status {
+  font-size: var(--t-1);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--graphite);
+}
+
+/* Тонкая линия бычьей крови вдоль нижнего края — ход раскладки. */
+.progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  opacity: 0;
+  transition: opacity var(--fast) var(--ease);
+}
+.progress span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--accent);
+  transform-origin: left;
+  transform: scaleX(var(--p, 0));
+  transition: transform 160ms linear;
+}
+.is-busy .progress { opacity: 1; }
+.is-busy .foot .link { visibility: hidden; }
+
+/* ---------- Итог ---------- */
+
+.result { font-size: var(--t2); }
+.result .num { font-feature-settings: "lnum"; }
+
+.failures {
+  margin-top: 0.786rem;
+  max-height: 6.5rem;
+  overflow-y: auto;
+  font-size: var(--t-1);
+  color: var(--graphite);
+  text-align: left;
+}
+.failures p + p { margin-top: 0.2rem; }
+
+/* ---------- Перетаскивание ---------- */
+
+.is-dragging .title { color: var(--accent); }
+.is-dragging .choices, .is-dragging .foot { opacity: 0.25; transition: opacity var(--fast) var(--ease); }
+
+/* ---------- Сообщение об ошибке ---------- */
+
+.toast {
+  position: absolute;
+  left: var(--field);
+  right: var(--field);
+  bottom: 3.6rem;
+  text-align: center;
+  font-size: var(--t0);
+  color: var(--accent);
+  opacity: 0;
+  transform: translateY(0.3rem);
+  transition: opacity var(--fast) var(--ease), transform var(--fast) var(--ease);
+  pointer-events: none;
+}
+.toast.is-shown { opacity: 1; transform: none; }
+
+/* ---------- Мак: кнопки окна сидят слева сверху ---------- */
+
+.is-mac .view { padding-top: 2.4rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

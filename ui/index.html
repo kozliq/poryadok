@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Порядок</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="card" id="card" data-tauri-drag-region>
+    <div class="sheen" aria-hidden="true"></div>
+
+    <!-- Визитка: имя по центру, мелкие подписи по краям -->
+    <section class="view view--home" id="home" data-tauri-drag-region>
+      <p class="corner corner--right caps" id="today" data-tauri-drag-region></p>
+      <div class="center" data-tauri-drag-region>
+        <h1 class="title caps" id="title" data-tauri-drag-region>Порядок</h1>
+        <p class="subtitle" id="subtitle" data-tauri-drag-region>раскладывает файлы по полкам</p>
+        <hr class="rule">
+        <nav class="choices" id="choices" aria-label="Какую папку разобрать"></nav>
+        <p class="hint caps" id="hint" data-tauri-drag-region>или перетащите сюда любую папку</p>
+      </div>
+      <footer class="foot">
+        <button class="link" id="folders" type="button" aria-pressed="false"></button>
+        <button class="link" id="rules" type="button">свои правила</button>
+        <button class="link" id="undo" type="button" hidden>вернуть прошлую</button>
+      </footer>
+    </section>
+
+    <!-- План: что куда поедет -->
+    <section class="view view--plan" id="plan" hidden>
+      <header class="head caps">
+        <span id="plan-folder"></span>
+        <span id="plan-total" class="num"></span>
+      </header>
+      <hr class="rule rule--wide">
+      <div class="shelves" id="shelves" tabindex="-1"></div>
+      <footer class="foot">
+        <button class="link" id="back" type="button">← назад</button>
+        <p class="status" id="status" aria-live="polite"></p>
+        <button class="link link--main" id="apply" type="button">Разложить</button>
+      </footer>
+      <div class="progress" id="progress" aria-hidden="true"><span></span></div>
+    </section>
+
+    <!-- Итог -->
+    <section class="view view--done" id="done" hidden>
+      <div class="center">
+        <p class="result" id="result"></p>
+        <p class="subtitle" id="result-note"></p>
+        <div class="failures" id="failures"></div>
+      </div>
+      <footer class="foot">
+        <button class="link" id="revert" type="button">вернуть как было</button>
+        <span></span>
+        <button class="link link--main" id="finish" type="button">Готово</button>
+      </footer>
+    </section>
+
+    <p class="toast" id="toast" role="alert"></p>
+  </main>
+
+  <script src="mock.js"></script>
+  <script src="app.js" type="module"></script>
+</body>
+</html>
