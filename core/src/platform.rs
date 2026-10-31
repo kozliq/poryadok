@@ -50,6 +50,7 @@ pub fn in_cloud(meta: &fs::Metadata) -> bool {
 /// так и остаётся в облаке; переехавший наружу — скачивается. Проверено на iCloud:
 /// «Рабочий стол → Документы» — без скачивания, «Рабочий стол → Фильмы» — со скачиванием.
 pub fn cloud_roots(home: &Path) -> Vec<PathBuf> {
+    #[cfg_attr(not(any(target_os = "macos", windows)), allow(unused_mut))]
     let mut roots = Vec::new();
     #[cfg(target_os = "macos")]
     {

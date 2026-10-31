@@ -42,4 +42,6 @@ jobs:
           releaseName: Порядок ${{ github.ref_name }}
           releaseBody: Скачайте файл для своей системы ниже. Как открыть неподписанную программу — в README.
           releaseDraft: true
+          # Русское имя программы в названии файла GitHub превращает в пустоту.
+          assetNamePattern: Poryadok_[version]_[arch][setup][ext]
           args: --target ${{ matrix.target }}
